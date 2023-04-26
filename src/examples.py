@@ -10,15 +10,15 @@ import matplotlib.pyplot as plt
 import mesh
 import plot
 
-to_do = ['']
+to_do = ['maze_connections']
 
 
 if 'maze' in to_do:
-	n = 10
-	m = 'square'
+	n = 20
+	m = 'circle'
 	s = 'optimal'
 	e = 'explore'
-	c = True
+	c = False
 	if m == 'circle':
 		id0, id1 = mesh.id_start_end_nods(n)
 		X, Y = mesh.create_mesh(n, m)
@@ -59,21 +59,20 @@ if 'maze' in to_do:
 
 
 if 'height' in to_do:
-	m = 1
-	s = 'circle'
+	m = 2
+	s = 'square'
 	if s == 'square':
-		n = 101
+		n = 151
 		X, Y = mesh.create_mesh(n, s)
 		if m == 1:
 			h = n*np.random.normal(0, 1, len(X))
 		elif m == 2:
 			adic = mesh.groupe_by(X, Y)
 			vdm = mesh.maze_fusion(adic)
-			dc1 = mesh.Dijkstra_triangular_mesh(X, Y, vdm, 0)
-			dc2 = mesh.Dijkstra_triangular_mesh(X, Y, vdm, len(X)-1)
-			dc3 = mesh.Dijkstra_triangular_mesh(X, Y, vdm, n-1)
-			dc4 = mesh.Dijkstra_triangular_mesh(X, Y, vdm, len(X)-n)
-			h = dc1+dc2+dc3+dc4+ n*np.random.normal(0, 1, len(X))
+			dc1 = mesh.Dijkstra_triangular_mesh(vdm, 0)
+			dc2 = mesh.Dijkstra_triangular_mesh(vdm, len(X)-1)
+			dc3 = mesh.Dijkstra_triangular_mesh(vdm, n-1)
+			h = dc1+dc2+dc3+ np.random.normal(0, 1, len(X))
 			h = h-np.min(h)
 			h = (h-np.max(h)/2)/2
 
@@ -86,16 +85,16 @@ if 'height' in to_do:
 		elif m == 2:
 			adic = mesh.groupe_by(X, Y)
 			vdm = mesh.maze_fusion(adic)
-			dc1 = mesh.Dijkstra_triangular_mesh(X, Y, vdm, id0)
-			dc2 = mesh.Dijkstra_triangular_mesh(X, Y, vdm, id1)
+			dc1 = mesh.Dijkstra_triangular_mesh(vdm, id0)
+			dc2 = mesh.Dijkstra_triangular_mesh(vdm, id1)
 			h = dc1+dc2+ n*np.random.normal(0, 1, len(X))
 			h = h-np.min(h)
 			h = (h-np.max(h)/2)/2
 
-	nsm = 10 ; ks = 10
+	nsm = 4 ; ks = 5
 	plot.show_height(X, Y, h, 'jet', msz=20, title='Raw', cent_cmap=False)
 	for i in range(nsm):
-		h = h+n*np.random.normal(0, 1, len(X))/(i+2)**2
+		h = h+ np.random.normal(0, 1, len(X))/(i+2)**2
 		h = mesh.lin_smooth(X, Y, h, ks)
 		plot.show_height(X, Y, h, 'jet', msz=20,
 					   title='smooth: '+str(i+1)+'/'+str(nsm),
