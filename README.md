@@ -6,6 +6,8 @@ There are two method to crate a mesh, which can be choose in the function **crea
 All the following actions can be applied on the mesh, regardless of the method used.
 
 There are two method to create maze from the created mesh. The 'fusion' method with **maze_fusion**. The 'exploration' method with **maze_exploration**.
+
+In the following plots, the blue dots are the nodes. The blue lines are the connections between the nodes. The broken purpule line is a path between two nodes.
 ![Exemple picture](circle_methods.png)
 
 ![Exemple picture](square_methods.png)
