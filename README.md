@@ -11,3 +11,5 @@ There are two method to solve the created maze. The 'gradient' method with **Dij
 
 For the creation of height map, you can appli noise on the node as initial heigth. Then use **lin_smooth** or **kernel_smooth** to smooth this random height.
 ![Exemple picture](circle_height.png)
+
+![Exemple picture](square_height.png)
