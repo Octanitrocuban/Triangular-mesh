@@ -6,7 +6,7 @@ There are two method to crate a mesh, which can be choose in the function **crea
 All the following actions can be applied on the mesh, regardless of the method used.
 
 There are two method to create maze from the created mesh. The 'fusion' method with **maze_fusion**. The 'exploration' method with **maze_exploration**.
-![Exemple picture](circle_mmethods.png)
+![Exemple picture](circle_methods.png)
 
 ![Exemple picture](square_methods.png)
 
