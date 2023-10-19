@@ -6,6 +6,7 @@ Created on Fri Apr  7 19:56:24 2023
 """
 import numpy as np
 from tqdm import tqdm
+from scipy.spatial.distance import cdist
 
 def id_start_end_nods(n_cycle):
 	"""
@@ -178,8 +179,11 @@ def groupe_by(x, y):
 	"""
 	kern = np.arange(len(x), dtype=int)
 	vetcorised_dico = list(kern[:, np.newaxis])
+	pair_positions = np.array([x, y]).T
+	# the astype('float32') is to avoid round error with == 1 condition
+	distances_matrix = cdist(pair_positions, pair_positions).astype('float32')
 	for i in range(len(x)):
-		d = (((x[i]-x)**2 +(y[i]-y)**2)**0.5).astype('float32')
+		d = distances_matrix[i]
 		vetcorised_dico[i] = np.append(vetcorised_dico[i], kern[d == 1])
 
 	vetcorised_dico = np.array(vetcorised_dico, dtype=object)
