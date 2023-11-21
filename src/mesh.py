@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Apr  7 19:56:24 2023
+Module to create mesh, maze or random height map with hexagonal mesh.
 """
 import numpy as np
 from tqdm import tqdm
