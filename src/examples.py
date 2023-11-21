@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Apr 10 22:49:21 2023
-
-@author: Matthieu Nougaret
 """
 import numpy as np
 from tqdm import tqdm
