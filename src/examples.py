@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Apr 10 22:49:21 2023
+Module to test the functions to create and analyze hexagonal mesh.
 """
 import numpy as np
 from tqdm import tqdm
