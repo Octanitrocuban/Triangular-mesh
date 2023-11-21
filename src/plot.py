@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Apr  7 20:18:22 2023
-
-@author: Matthieu Nougaret
+Module plot the hexadecimal meshs.
 """
 import numpy as np
 import matplotlib.pyplot as plt
