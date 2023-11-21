@@ -8,14 +8,14 @@ All the following actions can be applied on the mesh, regardless of the method u
 There are two method to create maze from the created mesh. The 'fusion' method with **maze_fusion**. The 'exploration' method with **maze_exploration**.
 
 In the following plots, the blue dots are the nodes. The blue lines are the connections between the nodes. The broken purpule line is a path between two nodes.
-![Exemple picture](circle_methods.png)
+![Exemple picture](img/circle_methods.png)
 
-![Exemple picture](square_methods.png)
+![Exemple picture](img/square_methods.png)
 
 There are two method to solve the created maze. The 'gradient' method with **Dijkstra_triangular_mesh** and **optimal_path** which will compute the shortest path. The 'right' or 'left hand' method with **hand_solving** which will find a path by following a wall.
 
 
 For the creation of height map, you can applie noise on the node as initial heigth. Then use **lin_smooth** or **kernel_smooth** to smooth this random height.
-![Exemple picture](circle_height.png)
+![Exemple picture](img/circle_height.png)
 
-![Exemple picture](square_height.png)
+![Exemple picture](img/square_height.png)
