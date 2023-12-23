@@ -22,7 +22,8 @@ For the creation of height map, you can applie noise on the node as initial heig
 
 
 ## Analysis of labyrinths created
-Distribution of nodes with one (dead end), two, three, four, five and six connections. The test was done by creating 1 000 random mazes for each method and eache maze size.
+Distribution of nodes with one (dead end), two, three, four, five and six connections. The test was done 
+by creating 1 000 random mazes with method 'square' for the mesh for each method and eache maze size.
 ![Exemple picture](img/distribution_of_connections_1.png)
 
 ![Exemple picture](img/distribution_of_connections_2.png)
