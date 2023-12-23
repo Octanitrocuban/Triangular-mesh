@@ -21,8 +21,8 @@ For the creation of height map, you can applie noise on the node as initial heig
 ![Exemple picture](img/square_height.png)
 
 
-
-
+## Analysis of labyrinths created
+Distribution of nodes with one (dead end), two, three, four, five and six connections. The test was done by creating 1 000 random mazes for each method and eache maze size.
 ![Exemple picture](img/distribution_of_connections_1.png)
 
 ![Exemple picture](img/distribution_of_connections_2.png)
@@ -34,5 +34,10 @@ For the creation of height map, you can applie noise on the node as initial heig
 ![Exemple picture](img/distribution_of_connections_5.png)
 
 ![Exemple picture](img/distribution_of_connections_6.png)
+
+
+## Time consumtion
+Time took to create maze depends of their size and of the algorithm as we can se on the figure below:
+(The test was done by creating 1 000 random mazes for each method and eache maze size).
 
 ![Exemple picture](img/time_contruction_methods.png)
