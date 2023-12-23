@@ -19,3 +19,20 @@ For the creation of height map, you can applie noise on the node as initial heig
 ![Exemple picture](img/circle_height.png)
 
 ![Exemple picture](img/square_height.png)
+
+
+
+
+![Exemple picture](img/distribution_of_connections_1.png)
+
+![Exemple picture](img/distribution_of_connections_2.png)
+
+![Exemple picture](img/distribution_of_connections_3.png)
+
+![Exemple picture](img/distribution_of_connections_4.png)
+
+![Exemple picture](img/distribution_of_connections_5.png)
+
+![Exemple picture](img/distribution_of_connections_6.png)
+
+![Exemple picture](img/time_contruction_methods.png)
