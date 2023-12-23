@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Module to create mesh, maze or random height map with hexagonal mesh.
+Created on Fri Apr  7 19:56:24 2023
+
+@author: Matthieu Nougaret
 """
 import numpy as np
 from tqdm import tqdm
@@ -48,23 +50,23 @@ def create_mesh(n, method):
 
 	Returns
 	-------
-	x : numpy.ndarray
-		X-axis positions of the dots.
-	y : numpy.ndarray
-		Y-axis positions of the dots.
+	positions : numpy.ndarray
+		Positions of the dots. Shape is (n, 2) with n the number of dots. The
+		first column is for the x-axis positions and the second for the y-axis
+		positions.
 
 	Example
 	-------
 	In[0] : create_mesh(5, 'square')
-	Out[0] : (array([0. , 1. , 2. , 3. , 4. , 0.5, 1.5, 2.5, 3.5, 4.5, 0. ,
-					 1. , 2. , 3. , 4. , 0.5, 1.5, 2.5, 3.5, 4.5, 0. , 1. ,
-					 2. , 3. , 4. ]),
-			  array([0.        , 0.        , 0.        , 0.        , 0.,
-					 0.8660254 , 0.8660254 , 0.8660254 , 0.8660254 ,
-					 0.8660254 , 1.73205081, 1.73205081, 1.73205081,
-					 1.73205081, 1.73205081, 2.59807621, 2.59807621,
-					 2.59807621, 2.59807621, 2.59807621, 3.46410162,
-					 3.46410162, 3.46410162, 3.46410162, 3.46410162]))
+	Out[0] : array([[0. , 0.        ], [1. , 0.        ], [2. , 0.        ],
+					[3. , 0.        ], [4. , 0.        ], [0.5, 0.8660254 ],
+					[1.5, 0.8660254 ], [2.5, 0.8660254 ], [3.5, 0.8660254 ],
+					[4.5, 0.8660254 ], [0. , 1.73205081], [1. , 1.73205081],
+					[2. , 1.73205081], [3. , 1.73205081], [4. , 1.73205081],
+					[0.5, 2.59807621], [1.5, 2.59807621], [2.5, 2.59807621],
+					[3.5, 2.59807621], [4.5, 2.59807621], [0. , 3.46410162],
+					[1. , 3.46410162], [2. , 3.46410162], [3. , 3.46410162],
+					[4. , 3.46410162]])
 
 	"""
 	if method == 'square':
@@ -124,19 +126,20 @@ def create_mesh(n, method):
 		alli = np.concatenate(np.array(pns, dtype=object))
 		x, y = alli.T
 
-	return x, y
+	positions = np.array([x, y]).T
+	return positions
 
-def groupe_by(x, y):
+def groupe_by(positions):
 	"""
 	Function to pass from a vectorised dictionary of pairwise links between
 	dots, to an other vectorised dictionary of full connection for each dots.
 
 	Parameters
 	----------
-	x : numpy.ndarray
-		X-axis positions of the dots.
-	y : numpy.ndarray
-		Y-axis positions of the dots.
+	positions : numpy.ndarray
+		Positions of the dots. Shape is (n, 2) with n the number of dots. The
+		first column is for the x-axis positions and the second for the y-axis
+		positions.
 
 	Returns
 	-------
@@ -146,8 +149,8 @@ def groupe_by(x, y):
 
 	Example
 	-------
-	In[0] : x, y = create_mesh(5, 'square')
-	In[1] : groupe_by(x, y)
+	In[0] : positions = create_mesh(5, 'square')
+	In[1] : groupe_by(positions)
 	Out[1] : array([array([0, 1, 5], dtype=int64),
 					array([1, 2, 5, 6, 0], dtype=int64),
 					array([2, 3, 6, 7, 1], dtype=int64),
@@ -175,14 +178,12 @@ def groupe_by(x, y):
 					array([24, 18, 19, 23], dtype=int64)], dtype=object)
 
 	"""
-	kern = np.arange(len(x), dtype=int)
+	kern = np.arange(positions.shape[0], dtype=int)
 	vetcorised_dico = list(kern[:, np.newaxis])
-	pair_positions = np.array([x, y]).T
-	# the astype('float32') is to avoid round error with == 1 condition
-	distances_matrix = cdist(pair_positions, pair_positions).astype('float32')
-	for i in range(len(x)):
-		d = distances_matrix[i]
-		vetcorised_dico[i] = np.append(vetcorised_dico[i], kern[d == 1])
+	distances = cdist(positions, positions).astype('float32')
+	for i in range(positions.shape[0]):
+		vetcorised_dico[i] = np.append(vetcorised_dico[i],
+										kern[distances[i] == 1])
 
 	vetcorised_dico = np.array(vetcorised_dico, dtype=object)
 	return vetcorised_dico
@@ -208,8 +209,8 @@ def make_first_conn(vect_dico):
 
 	Example
 	-------
-	In[0] : x, y = create_mesh(5, 'square')
-	In[1] : adic = groupe_by(x, y)
+	In[0] : positions = create_mesh(5, 'square')
+	In[1] : adic = groupe_by(positions)
 	In[2] : make_first_conn(adic)
 	Out[3] : ([array([0, 5]), array([1, 6]), array([2, 3]), array([3, 7, 2]),
 			   array([4, 8]), array([5, 0]), array([6, 1]),
@@ -219,8 +220,8 @@ def make_first_conn(vect_dico):
 			   array([16, 22]), array([17, 13, 23]), array([18, 14, 24, 19]),
 			   array([19, 18]), array([20, 21]), array([21, 20]),
 			   array([22, 16]), array([23, 17]), array([24, 18])],
-			 array([0, 1, 2, 2, 4, 0, 1, 2, 4, 9, 10, 10, 2, 13, 9, 10, 16,
-					13, 9, 9, 20, 20, 16, 13, 9]))
+			   array([0, 1, 2, 2, 4, 0, 1, 2, 4, 9, 10, 10, 2, 13, 9, 10, 16,
+					 13, 9, 9, 20, 20, 16, 13, 9]))
 
 	"""
 	length = len(vect_dico)
@@ -238,6 +239,7 @@ def make_first_conn(vect_dico):
 			vect_dico_maze[r] = np.append(vect_dico_maze[r], l[c])
 			vect_dico_maze[l[c]] = np.append(vect_dico_maze[l[c]],
 											 vect_dico_maze[r][0])
+
 			mini = np.min([s, connect_v[l[c]]])
 			connect_v[connect_v == connect_v[r]] = mini
 			connect_v[connect_v == connect_v[l[c]]] = mini
@@ -272,8 +274,8 @@ def maze_fusion(vect_dico):
 
 	Example
 	-------
-	In[0] : x, y = create_mesh(5, 'square')
-	In[1] : adic = groupe_by(x, y)
+	In[0] : positions = create_mesh(5, 'square')
+	In[1] : adic = groupe_by(positions)
 	In[2] : maze_fusion(adic)
 	Out[2] : array([array([0, 1], dtype=object), 
 					array([1, 2, 5, 0], dtype=object),
@@ -357,34 +359,19 @@ def maze_exploration(all_conn_dict, start_node=0):
 
 	Example
 	-------
-	In[0] : x, y = create_mesh(5, 'square')
-	In[1] : adic = groupe_by(x, y)
+	In[0] : positions = create_mesh(5, 'square')
+	In[1] : adic = groupe_by(positions)
 	In[2] : maze_exploration(adic, start_node=0)
-	Out[2] : array([array([0, 1]),
-					array([1, 0, 5]),
-					array([2, 6, 7]),
-					array([3, 7, 4]),
-					array([4, 3, 9]),
-					array([5, 1, 10]),
-					array([6, 12, 11, 2]),
-					array([7, 2, 3]),
-					array([8, 9, 14]),
-					array([9, 4, 8]),
-					array([10, 5, 15]),
-					array([11, 6]),
-					array([12, 17, 6]),
-					array([13, 14, 18]),
-					array([14, 8, 13]),
-					array([15, 10, 21]),
-					array([16, 22, 17]),
-					array([17, 16, 12]),
-					array([18, 13, 23]),
-					array([19, 24]),
-					array([20, 21]),
-					array([21, 15, 22, 20]),
-					array([22, 21, 16]),
-					array([23, 18, 24]),
-					array([24, 23, 19])], dtype=object)
+	Out[2] : array([array([0, 1]), array([1, 0, 5]), array([2, 6, 7]),
+					array([3, 7, 4]), array([4, 3, 9]), array([5, 1, 10]),
+					array([6, 12, 11, 2]), array([7, 2, 3]),
+					array([8, 9, 14]), array([9, 4, 8]), array([10, 5, 15]),
+					array([11, 6]), array([12, 17, 6]), array([13, 14, 18]),
+					array([14, 8, 13]), array([15, 10, 21]),
+					array([16, 22, 17]), array([17, 16, 12]),
+					array([18, 13, 23]), array([19, 24]), array([20, 21]),
+					array([21, 15, 22, 20]), array([22, 21, 16]),
+					array([23, 18, 24]), array([24, 23, 19])], dtype=object)
 
 	Note
 	----
@@ -437,6 +424,93 @@ def maze_exploration(all_conn_dict, start_node=0):
 
 	vect_dico_maze = np.array(vect_dico_maze, dtype=object)
 	return vect_dico_maze
+
+def kurskal(points):
+	"""
+	Function to compute Kruskal's algorithm.
+
+	Parameters
+	----------
+	node_p : numpy.ndarray
+		Position of the nodes. It will be used to compute the connection's
+		weight trhough euclidian distance.
+
+	Returns
+	-------
+	tree : numpy.ndarray
+		List of the nodes interconnections. The structure is as follow:
+		[self indices nodes from nodes_p, ...list of node connected...].
+
+	Example
+	-------
+	In [0]: dots = np.random.uniform(-3, 10, (11, 2))
+	In [1]: Kruskal_algorithm(dots)
+	Out[1]: array([array([0, 3, 7, 6]), array([1, 3]), array([ 2,  8, 10]),
+				   array([3, 0, 1]), array([ 4,  6,  9, 10]), array([5, 7]),
+				   array([6, 4, 0]), array([7, 5, 0]), array([8, 2]),
+				   array([9, 4]), array([10,  2,  4])], dtype=object)
+
+	"""
+	# calculates the distance matrix
+	m_dist = cdist(points, points, metric='euclidean').T
+	length = len(points)
+	# list of array
+	tree = list(np.arange(length)[:, np.newaxis])
+	mask = (np.arange(length)-np.arange(length)[:, np.newaxis]) > 0
+	# lists of index matrices
+	indices = list(np.meshgrid(range(length), range(length)))
+	# vector 1d to track connections in the tree and avoid loop formation
+	state = np.arange(length)
+	# We flatten the 2d matrix by keeping less than half of the distance
+	# matrix not to re-evaluate relationships between pairs of points.
+	sort_d = m_dist[mask]
+	# The same is done for index matrices
+	p_j = indices[0][mask]
+	p_i = indices[1][mask]
+	# Indices sorted in ascending order by distance values
+	rank = np.argsort(sort_d)
+	# Sorting indices and distance values
+	p_i = p_i[rank]
+	p_j = p_j[rank]
+	sort_d = sort_d[rank]
+	for i in range(len(sort_d)):
+		# To have no recontection with loops in the tree
+		if state[p_i[i]] != state[p_j[i]]:
+			tree[p_i[i]] = np.append(tree[p_i[i]], p_j[i])
+			tree[p_j[i]] = np.append(tree[p_j[i]], p_i[i])
+			# Update of the 'state' vector
+			minima = np.min([state[p_i[i]], state[p_j[i]]])
+			state[state == state[p_i[i]]] = minima
+			state[state == state[p_j[i]]] = minima
+			# early stoping to avoid useless loop
+			if len(state[state != minima]) == 0:
+				break
+
+	tree = np.array(tree, dtype=object)
+	return tree
+
+def kurskal_maze(posisition):
+	"""
+	Function to create a maze through the computation of a minimum spanning
+	tree with Kruskal's algorithm.
+
+	Parameters
+	----------
+	posisition : numpy.ndarray
+		Positions of the dots. Shape is (n, 2) with n the number of dots. The
+		first column is for the x-axis positions and the second for the y-axis
+		positions.
+
+	Returns
+	-------
+	kurskal_tree : numpy.ndarray
+		A 2-dimensional array that store the indices of the connected dots
+		for the maze.
+
+	"""
+	weights = posisition+np.random.uniform(-0.3, 0.3, posisition.shape)
+	kurskal_tree = kurskal(weights)
+	return kurskal_tree
 
 def complexification(all_connections, maze_connections):
 	"""
@@ -495,7 +569,6 @@ def complexification(all_connections, maze_connections):
 		maze_connections[to_] = np.append(maze_connections[to_], from_)
 
 	return maze_connections
-
 
 def lin_smooth(x, y, height, kernel_size):
 	"""
