@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Apr  7 19:56:24 2023
-
-@author: Matthieu Nougaret
+Module to create mesh, maze or random height map with hexagonal mesh.
 """
 import numpy as np
 from tqdm import tqdm
@@ -431,7 +429,7 @@ def kurskal(points):
 
 	Parameters
 	----------
-	node_p : numpy.ndarray
+	points : numpy.ndarray
 		Position of the nodes. It will be used to compute the connection's
 		weight trhough euclidian distance.
 
@@ -489,14 +487,14 @@ def kurskal(points):
 	tree = np.array(tree, dtype=object)
 	return tree
 
-def kurskal_maze(posisition):
+def kurskal_maze(positions):
 	"""
 	Function to create a maze through the computation of a minimum spanning
 	tree with Kruskal's algorithm.
 
 	Parameters
 	----------
-	posisition : numpy.ndarray
+	positions : numpy.ndarray
 		Positions of the dots. Shape is (n, 2) with n the number of dots. The
 		first column is for the x-axis positions and the second for the y-axis
 		positions.
@@ -508,7 +506,7 @@ def kurskal_maze(posisition):
 		for the maze.
 
 	"""
-	weights = posisition+np.random.uniform(-0.3, 0.3, posisition.shape)
+	weights = positions+np.random.uniform(-0.3, 0.3, positions.shape)
 	kurskal_tree = kurskal(weights)
 	return kurskal_tree
 
@@ -534,8 +532,8 @@ def complexification(all_connections, maze_connections):
 
 	Example
 	-------
-	In[0] : x, y = create_mesh(5, 'square')
-	In[1] : adic = groupe_by(x, y)
+	In[0] : positions = create_mesh(5, 'square')
+	In[1] : adic = groupe_by(positions)
 	In[2] : vdm = maze_exploration(adic, start_node=0)
 	In[3] : complexification(adic, vdm)
 	Out[3] : array([array([0, 5, 1]), array([1, 2, 0]), array([2, 3, 1, 6]),
@@ -570,16 +568,16 @@ def complexification(all_connections, maze_connections):
 
 	return maze_connections
 
-def lin_smooth(x, y, height, kernel_size):
+def lin_smooth(positions, height, kernel_size):
 	"""
 	Function to make linear smoothing.
 
 	Parameters
 	----------
-	x : numpy.ndarray
-		X-axis positions of the dots.
-	y : numpy.ndarray
-		Y-axis positions of the dots.
+	positions : numpy.ndarray
+		Positions of the dots. Shape is (n, 2) with n the number of dots. The
+		first column is for the x-axis positions and the second for the y-axis
+		positions.
 	height : numpy.ndarray
 		Z-axis value of the dots.
 	kernel_size : int
@@ -592,9 +590,9 @@ def lin_smooth(x, y, height, kernel_size):
 
 	Example
 	-------
-	In[0] : x, y = create_mesh(5, 'square')
-	In[1] : z = np.random.normal(0, 1, len(x))
-	In[2] : zp = lin_smooth(x, y, z, 2)
+	In[0] : positions = create_mesh(5, 'square')
+	In[1] : z = np.random.normal(0, 1, len(positions))
+	In[2] : zp = lin_smooth(posisitions, z, 2)
 	In[3] : z-zp
 	Out[3] : array([ 0.67545505,  0.55178669,  0.71163035, -1.20233883,
 					-0.9080009 , -0.99897729, -0.11821925,  1.48719037,
@@ -606,8 +604,10 @@ def lin_smooth(x, y, height, kernel_size):
 
 	"""
 	smoothed = np.zeros(len(height))
-	for i in range(len(x)):#tqdm(, desc='smoothing'):
-		dist = (((x[i]-x)**2 +(y[i]-y)**2)**0.5).astype('float32')
+	for i in range(len(positions)):#tqdm(, desc='smoothing'):
+		dist = (((positions[i, 0]-positions[:, 0])**2 +
+				 (positions[i, 1]-positions[:, 1])**2
+				  )**0.5).astype('float32')
 		# here a linear smooth is done with an equal weight for all of the
 		# values. It should be possible to modify it to have a personal smooth
 		# with the wanted weights.
@@ -637,8 +637,8 @@ def kernel_smooth(distances, height, kernel_size):
 
 	Example
 	-------
-	In[0] : x, y = create_mesh(5, 'square')
-	In[1] : adic = groupe_by(x, y)
+	In[0] : positions = create_mesh(5, 'square')
+	In[1] : adic = groupe_by(positions)
 	In[2] : vdm = maze_fusion(adic)
 	In[3] : z = Dijkstra_triangular_mesh(vdm, 0)
 	In[4] : zp = kernel_smooth(z, z, 1)
@@ -685,8 +685,8 @@ def Dijkstra_triangular_mesh(connections, id_st_node, id_ed_node=None,
 
 	Example
 	-------
-	In[0] : x, y = create_mesh(5, 'square')
-	In[1] : adic = groupe_by(x, y)
+	In[0] : positions = create_mesh(5, 'square')
+	In[1] : adic = groupe_by(positions)
 	In[2] : vdm = maze_fusion(adic)
 	In[3] : Dijkstra_triangular_mesh(vdm, 0)
 	Out[3] : array([0., 1., 2., 3., 4., 1., 2., 3., 4., 5., 2., 2., 3., 4.,
