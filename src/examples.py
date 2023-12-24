@@ -4,12 +4,12 @@ Module to test the functions to create and analyze hexagonal mesh.
 """
 import numpy as np
 from tqdm import tqdm
+from time import time
 import matplotlib.pyplot as plt
 import mesh
 import plot
 
-to_do = ['maze_connections']
-
+to_do = ['maze_stats']
 
 if 'maze' in to_do:
 	n = 20
@@ -102,59 +102,170 @@ if 'height' in to_do:
 if 'maze_connections' in to_do:
 	# In this part, we will investigate the interconection of the nodes
 	# created by the maze
-	m = 'square'
-	if m == 'circle':
-		n = 29
-		X, Y = mesh.create_mesh(n, m)
-	elif m == 'square':
-		n = 51
-		X, Y = mesh.create_mesh(n, m)
-	adic = mesh.groupe_by(X, Y)
-	len_fusion = []
-	len_explor = []
-	for i in tqdm(range(100)):
-		vdmf = mesh.maze_fusion(adic)
-		vdme = mesh.maze_exploration(adic)
-		tf = []
-		te = []
-		for j in range(len(vdmf)):
-			tf.append(len(vdmf[j])-1)
-			te.append(len(vdme[j])-1)
+	n_nodes = np.array([11, 21, 31, 41, 51, 61, 71, 81], dtype=int)
+	method = 'square'
+	c = 0
+	stats = []
+	temps = []
+	for sz in n_nodes:
+		temps.append([[], [], []])
+		stats.append([])
+		reseau = mesh.create_mesh(sz, method)
+		for i in tqdm(range(1000)):
+			sts = np.zeros((3, 7))
+			t0 = time()
+			adic = mesh.groupe_by(reseau)
+			maze_fus = mesh.maze_fusion(adic)
+			temps[c][0].append(time()-t0)
 
-		len_fusion.append(tf)
-		len_explor.append(te)
+			t0 = time()
+			adic = mesh.groupe_by(reseau)
+			maze_exp = mesh.maze_exploration(adic)
+			temps[c][1].append(time()-t0)
 
-	len_fusion = np.array(len_fusion)
-	len_explor = np.array(len_explor)
-	
-	distrib_f = []
-	distrib_e = []
-	for i in range(len(len_fusion)):
-		distrib_f.append(mesh.comptage(len_fusion[i]))
-		distrib_e.append(mesh.comptage(len_explor[i]))
+			t0 = time()
+			maze_kur = mesh.kurskal_maze(reseau)
+			temps[c][2].append(time()-t0)
 
-	distrib_f = np.array(distrib_f)
-	distrib_e = np.array(distrib_e)
+			if len(maze_fus) != len(maze_exp):
+				raise
 
-	mean_f = np.mean(distrib_f, axis=0)
-	max_f = np.max(distrib_f, axis=0)
-	min_f = np.min(distrib_f, axis=0)
+			if len(maze_fus) != len(maze_kur):
+				raise
 
-	mean_e = np.mean(distrib_e, axis=0)
-	max_e = np.max(distrib_e, axis=0)
-	min_e = np.min(distrib_e, axis=0)
+			for j in range(len(maze_fus)):
+				sts[0, len(maze_fus[j])-1] += 1
+				sts[1, len(maze_exp[j])-1] += 1
+				sts[2, len(maze_kur[j])-1] += 1
 
-	plt.figure(figsize=(10, 5))
+			stats[c].append(sts)
+
+		c += 1
+
+	stats = np.transpose(np.array(stats), (0, 2, 1, 3))
+	temps = np.transpose(np.array(temps), (0, 2, 1))
+
+	np.save('temps.npy', temps, allow_pickle=True)
+	np.save('stats.npy', stats, allow_pickle=True)
+
+	plt.figure(figsize=(14, 8))
+	plt.title('Time consumption', fontsize=18)
 	plt.grid(True, zorder=1)
-	plt.plot(np.arange(6)+1, mean_f, 'd', color='steelblue',
-			 label='mean of fusion method', zorder=4)
-	plt.plot(np.arange(6)+1, max_f, color='steelblue', label='min-max range')
-	plt.plot(np.arange(6)+1, min_f, color='steelblue')
-	plt.plot(np.arange(6)+1, mean_e, 'd', color='orange',
-		     label='mean of exploration method', zorder=4)
-	plt.plot(np.arange(6)+1, max_e, color='orange', label='min-max range')
-	plt.plot(np.arange(6)+1, min_e, color='orange')
-	plt.legend(fontsize=13)
-	plt.xlabel('Nombre de connexions par noeud')
-	plt.ylabel('Nombre de noeud ayant ce nombre de connexion')
+	plt.plot(n_nodes, np.mean(temps[:, :, 0], axis=1), 'b-', zorder=5,
+			 label='fusion')
+
+	violonplt1 = plt.violinplot(temps[:, :, 0].T, n_nodes, widths=3,
+								showmeans=True, showextrema=True,
+								showmedians=True)
+
+	for pc in violonplt1['bodies']:
+	    pc.set_color('b')
+	
+	violonplt1['cmeans'].set_color([0, 0, 1])
+	violonplt1['cmins'].set_color([0, 0, 1])
+	violonplt1['cmaxes'].set_color([0, 0, 1])
+	violonplt1['cbars'].set_color([0, 0, 1])
+	violonplt1['cmedians'].set_color([0, 0, 1])
+	plt.plot(n_nodes, np.mean(temps[:, :, 1], axis=1), 'g-', zorder=5,
+			 label='random walk')
+
+	violonplt2 = plt.violinplot(temps[:, :, 1].T, n_nodes, widths=3,
+								showmeans=True, showextrema=True,
+								showmedians=True)
+
+	for pc in violonplt2['bodies']:
+	    pc.set_color('g')
+	
+	violonplt2['cmeans'].set_color([0, .8, 0])
+	violonplt2['cmins'].set_color([0, .8, 0])
+	violonplt2['cmaxes'].set_color([0, .8, 0])
+	violonplt2['cbars'].set_color([0, .8, 0])
+	violonplt2['cmedians'].set_color([0, .8, 0])
+	plt.plot(n_nodes, np.mean(temps[:, :, 2], axis=1), 'r-', zorder=5,
+			 label='kurskal')
+
+	violonplt3 = plt.violinplot(temps[:, :, 2].T, n_nodes, widths=3,
+								showmeans=True, showextrema=True,
+								showmedians=True)
+
+	for pc in violonplt3['bodies']:
+	    pc.set_color('r')
+
+	violonplt3['cmeans'].set_color([1, 0, 0])
+	violonplt3['cmins'].set_color([1, 0, 0])
+	violonplt3['cmaxes'].set_color([1, 0, 0])
+	violonplt3['cbars'].set_color([1, 0, 0])
+	violonplt3['cmedians'].set_color([1, 0, 0])
+	plt.xticks(n_nodes, n_nodes, fontsize=15)
+	plt.yticks(fontsize=15)
+	plt.xlabel('Width size of the mazes', fontsize=15)
+	plt.ylabel('Time (s)', fontsize=15)
+	plt.legend(fontsize=15, loc='upper left', title='Methods',
+				title_fontsize=15)
+
+	plt.savefig('time_contruction_methods.png')
 	plt.show()
+
+	num_nodes = np.sum(stats, axis=3)[:, :, :, np.newaxis]
+	pdf = stats/num_nodes
+	for i in range(1, 7):
+	    plt.figure(figsize=(14, 8))
+	    plt.title('Distribution of node with '+str(i)+' connections',
+					fontsize=18)
+
+	    plt.grid(True, zorder=1)
+	    plt.plot(n_nodes, np.mean(pdf[:, 0, :, i], axis=1), 'b-', zorder=5,
+				 label='fusion')
+
+	    violonplt1 = plt.violinplot(pdf[:, 0, :, i].T, n_nodes, widths=3,
+									showmeans=True, showextrema=True,
+									showmedians=True)
+
+	    for pc in violonplt1['bodies']:
+	        pc.set_color('b')
+
+	    violonplt1['cmeans'].set_color([0, 0, 1])
+	    violonplt1['cmins'].set_color([0, 0, 1])
+	    violonplt1['cmaxes'].set_color([0, 0, 1])
+	    violonplt1['cbars'].set_color([0, 0, 1])
+	    violonplt1['cmedians'].set_color([0, 0, 1])
+
+	    plt.plot(n_nodes, np.mean(pdf[:, 1, :, i], axis=1), 'g-', zorder=5,
+				 label='random walk')
+
+	    violonplt2 = plt.violinplot(pdf[:, 1, :, i].T, n_nodes, widths=3,
+									showmeans=True, showextrema=True,
+									showmedians=True)
+
+	    for pc in violonplt2['bodies']:
+	        pc.set_color('g')
+
+	    violonplt2['cmeans'].set_color([0, .6, 0])
+	    violonplt2['cmins'].set_color([0, .6, 0])
+	    violonplt2['cmaxes'].set_color([0, .6, 0])
+	    violonplt2['cbars'].set_color([0, .6, 0])
+	    violonplt2['cmedians'].set_color([0, .6, 0])
+	    plt.plot(n_nodes, np.mean(pdf[:, 2, :, i], axis=1), 'r-', zorder=5,
+				 label='kurskal')
+
+	    violonplt3 = plt.violinplot(pdf[:, 2, :, i].T, n_nodes, widths=3,
+									showmeans=True, showextrema=True,
+									showmedians=True)
+
+	    for pc in violonplt3['bodies']:
+	        pc.set_color('r')
+
+	    violonplt3['cmeans'].set_color([1, 0, 0])
+	    violonplt3['cmins'].set_color([1, 0, 0])
+	    violonplt3['cmaxes'].set_color([1, 0, 0])
+	    violonplt3['cbars'].set_color([1, 0, 0])
+	    violonplt3['cmedians'].set_color([1, 0, 0])
+	    plt.xticks(n_nodes, n_nodes, fontsize=15)
+	    plt.yticks(fontsize=15)
+	    plt.xlabel('Width size of the mazes', fontsize=15)
+	    plt.ylabel('Distribution pdf (nodes/tot nodes)', fontsize=15)
+	    plt.legend(fontsize=15, loc='upper right', title='Methods',
+				   title_fontsize=15, ncol=3)
+
+	    plt.savefig('distribution_of_connections_'+str(i)+'.png')
+	    plt.show()
